@@ -55,13 +55,13 @@ class BulletJournal:
         # If file doesn't exist, create new database file
         # or connect to it if it exists
         self.connection = sqlite3.connect(
-            self.db_file, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+            self.db_file,
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
         )
         self.cursor = self.connection.cursor()
 
         # If the database didn't exist yet, create new task table
-        self.cursor.execute(
-            """
+        self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY,
                 title TEXT,
@@ -69,8 +69,7 @@ class BulletJournal:
                 state TEXT,
                 date INTEGER
             )
-        """
-        )
+        """)
         self.connection.commit()
 
         self.migrate()
@@ -84,7 +83,9 @@ class BulletJournal:
     def migrate(self) -> None:
         """Check if some tasks are due from previous days and ask to migrate them, so copy and set due."""
         date_today = datetime.today()
-        date_today = date_today.replace(hour=0, minute=0, second=0, microsecond=0)
+        date_today = date_today.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         execution_string = f'SELECT id, title, priority, date from tasks WHERE date < {int(date_today.timestamp())} and state = "due"'
         self.cursor.execute(execution_string)
         records = self.cursor.fetchall()
@@ -118,6 +119,7 @@ class BulletJournal:
                         if answer not in ["y", "n", "d"]:
                             raise ValueError("")
                     except ValueError:
+                        answer = None
                         with BrightRed():
                             print(
                                 'For yes type "y", for no type "n" and for done type "d"'
@@ -152,7 +154,9 @@ class BulletJournal:
                 print(f"BulletJournal: error: update task: {str(e)}")
 
     def add_task(self, title: str, priority: int, state: TaskStates) -> None:
-        date_today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        date_today = datetime.today().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         self.cursor.execute(
             """INSERT INTO tasks (title, priority, state, date)
                 VALUES(?,?,?,?)""",
